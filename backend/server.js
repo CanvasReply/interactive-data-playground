@@ -1,9 +1,56 @@
 import Fastify from 'fastify';
 import websocket from '@fastify/websocket';
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
+import { objectSchema } from "./schema.js";
 
-const fastify = Fastify({ logger: true })
+const app = Fastify({ logger: true })
 
-fastify.register(websocket);
+/* ================================
+    Swagger Documentation Setup
+ =============================== */
+await app.register(swagger, {
+    openapi: {
+        openapi: '3.0.0',
+        info: {
+            title: 'Interactive Data Visualization API',
+            description: 'API for providing real-time data for interactive visualizations',
+            version: '1.0.0'
+        },
+        tags: [
+            { name: 'user', description: 'User related end-points' },
+            { name: 'code', description: 'Code related end-points' }
+        ],
+        components: {
+            securitySchemes: {
+                apiKey: {
+                    type: 'apiKey',
+                    name: 'apiKey',
+                    in: 'header'
+                }
+            }
+        },
+    }
+})
+await app.register(swaggerUi, {
+    routePrefix: '/documentation',
+    uiConfig: {
+        docExpansion: 'full',
+        deepLinking: false
+    },
+    uiHooks: {
+        onRequest: function (request, reply, next) { next() },
+        preHandler: function (request, reply, next) { next() }
+    },
+    staticCSP: true,
+    transformStaticCSP: (header) => header,
+    transformSpecification: (swaggerObject, request, reply) => { return swaggerObject },
+    transformSpecificationClone: true
+})
+
+/* ================================
+    Fake Data
+ =============================== */
 
 let objects = [
     {
@@ -26,13 +73,29 @@ let objects = [
     }
 ];
 
-// REST endpoint
-fastify.get('/api/objects', async (req, reply) => {
+/* ================================
+    REST endpoint
+ =============================== */
+
+app.get('/api/objects', {
+    schema: {
+        response: {
+            200: {
+                type: 'array',
+                items: objectSchema,
+            }
+        }
+    }
+}, async (req, reply) => {
     return objects;
 });
 
-// WebSocket endpoint
-fastify.get('/ws', { websocket: true }, (connection, req) => {
+/* ================================
+    WebSocket endpoint
+ =============================== */
+
+app.register(websocket);
+app.get('/ws', { websocket: true }, (connection, req) => {
     const interval = setInterval(() => {
         objects[0].temperature = (20 + Math.random() * 10).toFixed(1);
         objects[0].lastUpdate = new Date().toISOString();
@@ -42,7 +105,7 @@ fastify.get('/ws', { websocket: true }, (connection, req) => {
     connection.socket.on('close', () => clearInterval(interval));
 });
 
-fastify.listen({ port: 3000 }, err => {
+app.listen({ port: 3000 }, err => {
     if (err) throw err;
     console.log('Server started on port 3000');
 });
