@@ -1,0 +1,18 @@
+{
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@fastify/websocket": "^11.2.0",
+    "fastify": "^5.7.4"
+  },
+  "name": "backend",
+  "private": "true",
+  "author": "Mikita Melnikau<m.melnikau@reply.com>",
+  "license": "ISC",
+  "version": "1.0.0"
+}
