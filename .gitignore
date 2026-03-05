@@ -1,2 +1,25 @@
-*\.idea
-*\node_modules
+**/.env
+**/.idea
+**/.vs
+**/.vscode
+**/.DS_Store
+
+# Node.js / backend
+backend/node_modules/
+backend/npm-debug.log
+
+# Unreal Engine
+unreal/Binaries/
+unreal/DerivedDataCache/
+unreal/Intermediate/
+unreal/Saved/
+unreal/*.opensdf
+unreal/*.sdf
+unreal/*.VC.db
+unreal/*.VC.opendb
+
+# Общие системные файлы
+Thumbs.db
+
+# Logs
+*.log
