@@ -3,6 +3,7 @@
 **/.vs
 **/.vscode
 **/.DS_Store
+**/*.log
 
 # Node.js / backend
 backend/node_modules/
@@ -17,9 +18,9 @@ unreal/*.opensdf
 unreal/*.sdf
 unreal/*.VC.db
 unreal/*.VC.opendb
+unreal/**/Log.*
+unreal/**/Cache
+unreal/**/Code Cache
 
 # Общие системные файлы
 Thumbs.db
-
-# Logs
-*.log
