@@ -4,13 +4,19 @@
     "node": ">=24.0.0"
   },
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@fastify/swagger": "^9.7.0",
     "@fastify/swagger-ui": "^5.2.5",
     "@fastify/websocket": "^11.2.0",
     "fastify": "^5.8.2"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.4",
+    "neostandard": "^0.13.0"
   },
   "name": "backend",
   "private": "true",
