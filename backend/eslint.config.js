@@ -1,7 +1,7 @@
-import neostandard from 'neostandard';
+import neostandard from 'neostandard'
 
 export default [
-    // ...neostandard({ ts: true }),
-    ...neostandard(),
-    { ignores: ['node_modules/**', 'dist/**', 'build/**', 'coverage/**'] }
-];
+  // ...neostandard({ ts: true }),
+  ...neostandard(),
+  { ignores: ['node_modules/**', 'dist/**', 'build/**', 'coverage/**'] }
+]
