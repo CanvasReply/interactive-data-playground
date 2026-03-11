@@ -8,13 +8,13 @@ import { aRouteScenarioSchema } from '../schemas.js'
 const randomScenarioQuery = {
   type: 'object',
   properties: {
-    xmin: { type: 'number', default: -5000 },
-    xmax: { type: 'number', default: 5000 },
-    ymin: { type: 'number', default: -5000 },
-    ymax: { type: 'number', default: 5000 },
-    z: { type: 'number', default: 100 },            // @NOTE: UE: centimeters!
-    speedMin: { type: 'number', default: 500 },
-    speedMax: { type: 'number', default: 800 },
+    xmin: { type: 'number', default: -1000 },
+    xmax: { type: 'number', default: 1000 },
+    ymin: { type: 'number', default: -1000 },
+    ymax: { type: 'number', default: 1000 },
+    z: { type: 'number', default: 40 },            // @NOTE: UE: centimeters!
+    speedMin: { type: 'number', default: 200 },
+    speedMax: { type: 'number', default: 400 },
     mode: { type: 'string', default: 'straight' },
     withinBounds: { type: 'boolean', default: true }
   },
@@ -33,10 +33,10 @@ export function aRouteScenario (fastify) {
     }
   }, async (request, reply) => {
     const {
-      xmin = -5000, xmax = 5000,
-      ymin = -5000, ymax = 5000,
-      z = 100,
-      speedMin = 500, speedMax = 800,
+      xmin = -1000, xmax = 1000,
+      ymin = -1000, ymax = 1000,
+      z = 40,
+      speedMin = 200, speedMax = 400,
       mode = 'straight',
       withinBounds = true
     } = request.query
@@ -45,9 +45,9 @@ export function aRouteScenario (fastify) {
       const width = xmax - xmin
       const height = ymax - ymin
       const maxPossible = Math.hypot(width, height)
-      if (maxPossible < 500) {
+      if (maxPossible < 400) {
         return reply.code(400).send({
-          error: 'Область слишком мала: диагональ меньше 500. Увеличьте границы.'
+          error: 'Space size is too low. Minimum size is 400'
         })
       }
     }
@@ -60,7 +60,7 @@ export function aRouteScenario (fastify) {
       const sx = randRange(xmin, xmax)
       const sy = randRange(ymin, ymax)
 
-      const d = randRange(500, 1000)            // расстояние в см
+      const d = randRange(400, 1000)            // расстояние в см
       const theta = randRange(0, 2 * Math.PI)
 
       const ex = sx + d * Math.cos(theta)
