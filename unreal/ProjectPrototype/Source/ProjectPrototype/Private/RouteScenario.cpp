@@ -7,7 +7,8 @@
 
 ARouteScenario::ARouteScenario()
 {
-    PrimaryActorTick.bCanEverTick = false; // at the moment we don't need to do anything but put markers
+    //PrimaryActorTick.bCanEverTick = false; // only markers (without movement)
+    PrimaryActorTick.bCanEverTick = true;
 }
 
 void ARouteScenario::BeginPlay()
@@ -95,6 +96,7 @@ void ARouteScenario::ApplyFromJson(const FString& Body)
     }
 
     UpdateMarkers();
+    StartRun(); // comment out if you need markers only
 
     UE_LOG(LogTemp, Log, TEXT("Scenario applied: Start(%.1f,%.1f,%.1f) End(%.1f,%.1f,%.1f) Speed=%.1f Mode=%s"),
         StartPos.X, StartPos.Y, StartPos.Z,
@@ -139,4 +141,44 @@ void ARouteScenario::SetEnd(const FVector& P)
 {
     EndPos = P;
     UpdateMarkers();
+}
+
+void ARouteScenario::StartRun() {
+    if (!Vehicle) {
+        UE_LOG(LogTemp, Warning, TEXT("Vehicle is not set"));
+        return;
+    }
+    if (Speed <= 0.f) Speed = 600.f; // default for 0
+
+    FVector StartFlat = StartPos;
+    Vehicle->SetActorLocation(StartFlat);
+    bMoving = true;
+}
+
+void ARouteScenario::Tick(float DeltaSeconds) {
+    Super::Tick(DeltaSeconds);
+    if (!bMoving || !Vehicle) return;
+
+    const FVector L = Vehicle->GetActorLocation();
+    FVector to = EndPos - L;
+
+    to.Z = 0.f; // x.y only
+
+    const float dist = to.Size();
+    if (dist <= AcceptanceRadius) {
+        bMoving = false;
+        return;
+    }
+
+    const FVector dir = to / dist;
+    const FVector step = dir * Speed * DeltaSeconds;
+
+    // position update
+    const FVector newLoc(L.X + step.X, L.Y + step.Y, StartPos.Z);
+    Vehicle->SetActorLocation(newLoc);
+
+    // rotation if needed
+    const FRotator desired = dir.Rotation();
+    const FRotator current = Vehicle->GetActorRotation();
+    Vehicle->SetActorRotation(FMath::RInterpTo(current, desired, DeltaSeconds, 6.f));
 }

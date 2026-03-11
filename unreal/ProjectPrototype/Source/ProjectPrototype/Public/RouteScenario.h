@@ -56,11 +56,23 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Scenario|Markers")
     void SetEnd(const FVector& P);
 
+    // Vehicle
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Scenario|Vehicle")
+    APawn* Vehicle = nullptr;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Scenario|Vehicle", meta = (ClampMin = "0.0"))
+    float AcceptanceRadius = 20.f;
+
+    UFUNCTION(BlueprintCallable, Category = "Scenario|Flow")
+    void StartRun(); // put Vehicle to start and go
+
 protected:
     virtual void BeginPlay() override;
+    virtual void Tick(float DeltaSeconds) override;
 
 private:
     void ApplyFromJson(const FString& Body);
     AActor* EnsureMarker(TSubclassOf<AActor> MarkerClass, AActor*& MarkerRef, const FVector& Pos) const;
     void UpdateMarkers() const;
+    bool bMoving = false;
 };
