@@ -18,6 +18,18 @@ void ARouteScenario::BeginPlay()
     {
         FetchAndApply();
     }
+
+    if (RefreshSeconds > 0.f)
+    {
+        FTimerHandle TimerHandle;
+        GetWorldTimerManager().SetTimer(
+            TimerHandle,
+            this,
+            &ARouteScenario::FetchAndApply,
+            RefreshSeconds,
+            true
+        );
+    }
 }
 
 void ARouteScenario::FetchAndApply()

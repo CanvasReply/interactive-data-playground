@@ -45,6 +45,10 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Scenario|Data")
     FString Mode = TEXT("straight");
 
+    UPROPERTY(EditAnywhere, Category = "Scenario|Data")
+    float RefreshSeconds = 2.0f;
+
+
     // Manual start or with BeginPlay
     UFUNCTION(BlueprintCallable, Category = "Scenario|Backend")
     void FetchAndApply();
