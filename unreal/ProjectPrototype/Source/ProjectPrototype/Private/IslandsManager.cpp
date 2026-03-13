@@ -218,19 +218,24 @@ void AIslandsManager::BuildFromData(const TArray<FIslandDTO>& Islands)
             if (TC)
             {
                 TC->RegisterComponent();
-                TC->AttachToComponent(Root, FAttachmentTransformRules::KeepRelativeTransform);
-                TC->SetText(FText::FromString(TEXT("Island")));
-                //TC->SetText(FText::FromString(Island.Label));
-                TC->SetHorizontalAlignment(EHorizTextAligment::EHTA_Center);
-                TC->SetVerticalAlignment(EVerticalTextAligment::EVRTA_TextCenter);
-                if (LabelFont) TC->SetFont(LabelFont);
-                TC->SetWorldSize(LabelWorldSize);
-                TC->SetTextRenderColor(FColor::Magenta);
 
-                const FVector LabelLoc = Island.Pos + FVector(0.f, 0.f, HTop + LabelZPadding);
+                const FVector LabelLoc = Island.Pos + FVector(0.f, 0.f, HTop + 100.f);
+
+                TC->AttachToComponent(Root, FAttachmentTransformRules::KeepWorldTransform);
                 TC->SetWorldLocation(LabelLoc);
 
+                TC->SetText(FText::FromString(Island.Label));
+                TC->SetHorizontalAlignment(EHorizTextAligment::EHTA_Center);
+                TC->SetVerticalAlignment(EVerticalTextAligment::EVRTA_TextCenter);
+                TC->SetWorldSize(LabelWorldSize);
+                TC->SetTextRenderColor(FColor::Turquoise);
+                TC->SetWorldRotation(FRotator(0.f, 180.f, 0.f));
+                TC->SetHiddenInGame(false);
+                TC->SetVisibility(true);
+
                 LabelComponents.Add(TC);
+
+                UE_LOG(LogTemp, Warning, TEXT("Created label component. Count=%d"), LabelComponents.Num());
             }
         }
 
@@ -322,7 +327,7 @@ void AIslandsManager::Tick(float DeltaTime)
     { BarsHISM0, BarsHISM1, BarsHISM2, BarsHISM3, BarsHISM4 };
 
     const float RotationSpeed = 20.f;
-
+    UE_LOG(LogTemp, Warning, TEXT("Tick labels count = %d"), LabelComponents.Num());
     for (FIslandInstanceData& IslandData : SpawnedIslands)
     {
         IslandData.CurrentYaw += RotationSpeed * DeltaTime;
