@@ -28,6 +28,34 @@ struct FIslandDTO
     FString Label;
 };
 
+USTRUCT()
+struct FIslandInstanceData
+{
+    GENERATED_BODY()
+
+    UPROPERTY()
+    FVector Center = FVector::ZeroVector;
+
+    UPROPERTY()
+    float CurrentYaw = 0.f;
+
+    UPROPERTY()
+    int32 BaseIndex = INDEX_NONE;
+
+    UPROPERTY()
+    TArray<int32> BarIndices;
+
+    UPROPERTY()
+    TArray<float> BarHeights;
+
+    FIslandInstanceData()
+    {
+        BarIndices.Init(INDEX_NONE, 5);
+        BarHeights.Init(0.f, 5);
+    }
+};
+
+
 UCLASS(Blueprintable)
 class PROJECTPROTOTYPE_API AIslandsManager : public AActor
 {
@@ -38,6 +66,8 @@ public:
 
     virtual void OnConstruction(const FTransform& Transform) override;
     virtual void BeginPlay() override;
+
+    virtual void Tick(float DeltaTime) override;
 
     UFUNCTION(BlueprintCallable, Category = "Islands")
     void BuildFromData(const TArray<FIslandDTO>& Islands);
@@ -115,10 +145,10 @@ protected:
     bool bShowLabels = true;
 
     UPROPERTY(EditAnywhere, Category = "Islands|Labels") 
-    float LabelWorldSize = 40.f; // font size
+    float LabelWorldSize = 80.f; // font size
 
     UPROPERTY(EditAnywhere, Category = "Islands|Labels") 
-    float LabelZPadding = 40.f; // padding
+    float LabelZPadding = 100.f; // padding
 
     UPROPERTY(EditAnywhere, Category = "Islands|Labels") 
     UFont* LabelFont = nullptr;
@@ -126,6 +156,9 @@ protected:
 
 
 private:
+    UPROPERTY()
+    TArray<FIslandInstanceData> SpawnedIslands;
+
     UPROPERTY(Transient)
     TArray<class UTextRenderComponent*> LabelComponents;
 

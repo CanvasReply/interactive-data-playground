@@ -42,8 +42,6 @@ AIslandsManager::AIslandsManager()
         FVector(0.f,  60.f, 0.f),
         FVector(0.f,   0.f, 0.f)
     };
-
-    PrimaryActorTick.bCanEverTick = true;
 }
 
 void AIslandsManager::OnConstruction(const FTransform& Transform)
@@ -118,7 +116,6 @@ void AIslandsManager::ClearAllInstances()
     BarsHISM3->ClearInstances();
     BarsHISM4->ClearInstances();
     BaseHISM->ClearInstances();
-
     for (UTextRenderComponent* C : LabelComponents)
     {
         if (IsValid(C))
@@ -126,9 +123,7 @@ void AIslandsManager::ClearAllInstances()
             C->DestroyComponent();
         }
     }
-
     LabelComponents.Reset();
-    SpawnedIslands.Reset();
 }
 
 void AIslandsManager::ComputeMinMax(const TArray<FIslandDTO>& Islands, float& OutMin, float& OutMax)
@@ -180,15 +175,11 @@ void AIslandsManager::BuildFromData(const TArray<FIslandDTO>& Islands)
 
     for (const FIslandDTO& Island : Islands)
     {
-		FIslandInstanceData Data;
-		Data.Center = Island.Pos;
-		Data.CurrentYaw = 0.f;
-
         // base of island (optional)
         if (bUseBaseIslands && BaseMesh)
         {
             const FTransform BaseT(FRotator::ZeroRotator, Island.Pos, BaseScale);
-            Data.BaseIndex = BaseHISM->AddInstance(BaseT);
+            BaseHISM->AddInstance(BaseT);
         }
 
         float HTop = 0.f;
@@ -202,11 +193,9 @@ void AIslandsManager::BuildFromData(const TArray<FIslandDTO>& Islands)
             const FVector Scale(BarXYScale, BarXYScale, H / FMath::Max(1.f, BarMeshHeightCM));
             const FTransform T(FRotator::ZeroRotator, Loc, Scale);
 
-
             if (BarComps[i])
             {
-                Data.BarHeights[i] = H;
-                Data.BarIndices[i] = BarComps[i]->AddInstance(T);
+                BarComps[i]->AddInstance(T);
             }
         }
 
@@ -219,8 +208,8 @@ void AIslandsManager::BuildFromData(const TArray<FIslandDTO>& Islands)
             {
                 TC->RegisterComponent();
                 TC->AttachToComponent(Root, FAttachmentTransformRules::KeepRelativeTransform);
-                TC->SetText(FText::FromString(TEXT("Island")));
-                //TC->SetText(FText::FromString(Island.Label));
+
+                TC->SetText(FText::FromString(Island.Label));
                 TC->SetHorizontalAlignment(EHorizTextAligment::EHTA_Center);
                 TC->SetVerticalAlignment(EVerticalTextAligment::EVRTA_TextCenter);
                 if (LabelFont) TC->SetFont(LabelFont);
@@ -233,8 +222,6 @@ void AIslandsManager::BuildFromData(const TArray<FIslandDTO>& Islands)
                 LabelComponents.Add(TC);
             }
         }
-
-        SpawnedIslands.Add(Data);
     }
 
 }
@@ -312,50 +299,4 @@ void AIslandsManager::OnHttpCompleted(FHttpRequestPtr Request, FHttpResponsePtr 
     }
 
     BuildFromData(Islands);
-}
-
-void AIslandsManager::Tick(float DeltaTime)
-{
-    Super::Tick(DeltaTime);
-
-    UHierarchicalInstancedStaticMeshComponent* BarComps[5] =
-    { BarsHISM0, BarsHISM1, BarsHISM2, BarsHISM3, BarsHISM4 };
-
-    const float RotationSpeed = 20.f;
-
-    for (FIslandInstanceData& IslandData : SpawnedIslands)
-    {
-        IslandData.CurrentYaw += RotationSpeed * DeltaTime;
-        const FRotator Rot(0.f, IslandData.CurrentYaw, 0.f);
-
-        if (IslandData.BaseIndex != INDEX_NONE)
-        {
-            const FTransform BaseT(Rot, IslandData.Center, BaseScale);
-            BaseHISM->UpdateInstanceTransform(IslandData.BaseIndex, BaseT, false, false, true);
-        }
-
-        for (int32 i = 0; i < 5; ++i)
-        {
-            if (IslandData.BarIndices[i] == INDEX_NONE || !BarComps[i])
-                continue;
-
-            const float H = IslandData.BarHeights[i];
-            const FVector RotatedOffset = Rot.RotateVector(Offsets[i]);
-            const FVector Loc = IslandData.Center + RotatedOffset + FVector(0.f, 0.f, H * 0.5f);
-            const FVector Scale(BarXYScale, BarXYScale, H / FMath::Max(1.f, BarMeshHeightCM));
-            const FTransform T(Rot, Loc, Scale);
-
-            BarComps[i]->UpdateInstanceTransform(IslandData.BarIndices[i], T, false, false, true);
-        }
-    }
-
-    BaseHISM->MarkRenderStateDirty();
-
-    for (int32 i = 0; i < 5; ++i)
-    {
-        if (BarComps[i])
-        {
-            BarComps[i]->MarkRenderStateDirty();
-        }
-    }
 }
