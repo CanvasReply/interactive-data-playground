@@ -1,5 +1,7 @@
 #include "IslandsManager.h"
 #include "Components/SceneComponent.h"
+#include "Components/TextRenderComponent.h"
+#include "Engine/Font.h"  
 #include "HttpModule.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
@@ -114,6 +116,14 @@ void AIslandsManager::ClearAllInstances()
     BarsHISM3->ClearInstances();
     BarsHISM4->ClearInstances();
     BaseHISM->ClearInstances();
+    for (UTextRenderComponent* C : LabelComponents)
+    {
+        if (IsValid(C))
+        {
+            C->DestroyComponent();
+        }
+    }
+    LabelComponents.Reset();
 }
 
 void AIslandsManager::ComputeMinMax(const TArray<FIslandDTO>& Islands, float& OutMin, float& OutMax)
@@ -172,10 +182,13 @@ void AIslandsManager::BuildFromData(const TArray<FIslandDTO>& Islands)
             BaseHISM->AddInstance(BaseT);
         }
 
+        float HTop = 0.f;
+
         // columns
         for (int32 i = 0; i < 5 && i < Island.Bars.Num(); ++i)
         {
             const float H = MapHeight(Island.Bars[i], MinV, MaxV);
+            HTop = FMath::Max(HTop, H);
             const FVector Loc = Island.Pos + Offsets[i] + FVector(0.f, 0.f, H * 0.5f);
             const FVector Scale(BarXYScale, BarXYScale, H / FMath::Max(1.f, BarMeshHeightCM));
             const FTransform T(FRotator::ZeroRotator, Loc, Scale);
@@ -185,7 +198,32 @@ void AIslandsManager::BuildFromData(const TArray<FIslandDTO>& Islands)
                 BarComps[i]->AddInstance(T);
             }
         }
+
+
+		// labels
+        if (bShowLabels && !Island.Label.IsEmpty())
+        {
+            UTextRenderComponent* TC = NewObject<UTextRenderComponent>(this);
+            if (TC)
+            {
+                TC->RegisterComponent();
+                TC->AttachToComponent(Root, FAttachmentTransformRules::KeepRelativeTransform);
+
+                TC->SetText(FText::FromString(Island.Label));
+                TC->SetHorizontalAlignment(EHorizTextAligment::EHTA_Center);
+                TC->SetVerticalAlignment(EVerticalTextAligment::EVRTA_TextCenter);
+                if (LabelFont) TC->SetFont(LabelFont);
+                TC->SetWorldSize(LabelWorldSize);
+                TC->SetTextRenderColor(FColor::White);
+
+                const FVector LabelLoc = Island.Pos + FVector(0.f, 0.f, HTop + LabelZPadding);
+                TC->SetWorldLocation(LabelLoc);
+
+                LabelComponents.Add(TC);
+            }
+        }
     }
+
 }
 
 void AIslandsManager::FetchAndBuild()

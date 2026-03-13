@@ -4,6 +4,10 @@
 #include "GameFramework/Actor.h"
 #include "Http.h"
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
+
+class UTextRenderComponent;
+class UFont;
+
 #include "IslandsManager.generated.h"
 
 USTRUCT(BlueprintType)
@@ -106,7 +110,25 @@ protected:
     UPROPERTY(EditAnywhere, Category = "Islands|Data")
     FString EndpointURL = TEXT("http://localhost:3000/api/islands");
 
+    // text displaying
+    UPROPERTY(EditAnywhere, Category = "Islands|Labels") 
+    bool bShowLabels = true;
+
+    UPROPERTY(EditAnywhere, Category = "Islands|Labels") 
+    float LabelWorldSize = 40.f; // font size
+
+    UPROPERTY(EditAnywhere, Category = "Islands|Labels") 
+    float LabelZPadding = 40.f; // padding
+
+    UPROPERTY(EditAnywhere, Category = "Islands|Labels") 
+    UFont* LabelFont = nullptr;
+
+
+
 private:
+    UPROPERTY(Transient)
+    TArray<class UTextRenderComponent*> LabelComponents;
+
     void ClearAllInstances();
     void EnsureOffsets();
     void ApplyMeshesAndMaterials();

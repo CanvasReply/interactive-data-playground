@@ -1,7 +1,7 @@
 import { anIsland, } from '../schemas.js'
 
 export function islandsScenario (fastify) {
-  fastify.get('/islands',
+  fastify.get('/api/islands',
     {
       schema: {
         response: {
